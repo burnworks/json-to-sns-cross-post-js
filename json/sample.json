@@ -1,0 +1,21 @@
+{
+    "text": "APIからの投稿テストです。\n下記のスクリプトを使っています\n\nhttps://github.com/burnworks/json-to-sns-cross-post-js",
+    "images": [
+        {
+            "src": "./images/example-01.png",
+            "alt": "代替テキスト01"
+        },
+        {
+            "src": "./images/example-02.png",
+            "alt": "代替テキスト01"
+        },
+        {
+            "src": "./images/example-03.png",
+            "alt": "代替テキスト03"
+        },
+        {
+            "src": "./images/example-04.png",
+            "alt": "代替テキスト04"
+        }
+    ]
+}
