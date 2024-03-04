@@ -1,8 +1,8 @@
 # json-to-sns-cross-post-js 
 
-A script for cross-posting to social networks like Twitter, Bluesky, and Mastodon from JSON data.
+A script for cross-posting to social networks like X (Twitter), Bluesky, and Mastodon from JSON data.
 
-JSON データから Twitter, Bluesky, Mastodon などの SNS にクロスポストする JavaScript（Node.js）です。
+JSON データから X（Twitter）, Bluesky, Mastodon などの SNS にクロスポストする JavaScript（Node.js）です。
 
 ## Getting Started
 
