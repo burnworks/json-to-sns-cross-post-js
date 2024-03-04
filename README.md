@@ -75,7 +75,9 @@ POST_JSON_URL=json/sample.json
 }
 ```
 
-`images` は、テキストのみの投稿の場合は空にしてください。（`"images": []`）、あるいは `images` 自体を削除しても良いです。
+`images` は、最大で 4 つまでの画像を投稿に添付できるようにしています。
+
+テキストのみの投稿の場合は `images` を空にしてください。（`"images": []`）、あるいは `images` 自体を削除しても良いです。
 
 `images.src` は、
 
