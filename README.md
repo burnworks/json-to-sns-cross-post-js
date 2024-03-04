@@ -111,6 +111,14 @@ npm run post
 },
 ```
 
+特定のスクリプトだけ実行したい場合は、
+
+```sh
+node bluesky.mjs
+```
+
+などで実行できます。
+
 ## リンク
 
 ### Bluesky
