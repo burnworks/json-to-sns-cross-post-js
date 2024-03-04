@@ -120,3 +120,8 @@ npm run post
 ### X (Twitter)
 - [Twitter API Documentation](https://developer.twitter.com/en/docs/twitter-api)
 - [PLhery/node-twitter-api-v2](https://github.com/plhery/node-twitter-api-v2)
+
+## メモ
+
+- mastodon-api がメンテされてないっぽいのが気になる
+- JSON を取得しにいく部分とかは各スクリプトに個別に実装するんじゃなく共通コード化した方がいいと思うけど面倒くさいので今はよし
