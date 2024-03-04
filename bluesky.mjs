@@ -57,12 +57,16 @@ const getOgInfo = async (url) => {
         const ogImageUrl = result.ogImage?.at(0)?.url || '';
         const res = await fetch(ogImageUrl);
         const buffer = await res.arrayBuffer();
+        const mimeType = res.headers.get('Content-Type');
 
-        // 画像の拡張子に基づいて処理を分岐
+        // 画像の MIME Type に基づいて処理を分岐
         const ext = path.extname(new URL(ogImageUrl).pathname).toLowerCase();
         let imageOptions = { resize: { width: 800, fit: 'inside', withoutEnlargement: true } };
-        if (ext === '.jpeg' || ext === '.jpg') imageOptions = { ...imageOptions, format: 'jpeg', options: { quality: 80, progressive: true } };
-        else if (ext === '.png') imageOptions = { ...imageOptions, format: 'png', options: { quality: 80 } };
+        if (mimeType === 'image/jpeg') {
+            imageOptions = { ...imageOptions, format: 'jpeg', options: { quality: 80, progressive: true } };
+        } else if (mimeType === 'image/png') {
+            imageOptions = { ...imageOptions, format: 'png', options: { quality: 80 } };
+        }
 
         const compressedImage = await sharp(buffer)
             .resize(imageOptions.resize)
@@ -72,7 +76,7 @@ const getOgInfo = async (url) => {
         return {
             siteUrl: url,
             ogImageUrl: ogImageUrl,
-            type: result.ogImage?.at(0)?.type || '',
+            type: mimeType,
             description: result.ogDescription || '',
             title: result.ogTitle || '',
             imageData: new Uint8Array(compressedImage),
