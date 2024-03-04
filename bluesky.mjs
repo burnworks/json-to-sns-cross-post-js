@@ -60,7 +60,6 @@ const getOgInfo = async (url) => {
         const mimeType = res.headers.get('Content-Type');
 
         // 画像の MIME Type に基づいて処理を分岐
-        const ext = path.extname(new URL(ogImageUrl).pathname).toLowerCase();
         let imageOptions = { resize: { width: 800, fit: 'inside', withoutEnlargement: true } };
         if (mimeType === 'image/jpeg') {
             imageOptions = { ...imageOptions, format: 'jpeg', options: { quality: 80, progressive: true } };
