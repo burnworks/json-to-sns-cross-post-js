@@ -11,6 +11,7 @@ pnpm-debug.log*
 .env
 .env.production
 .env.local
+.x-oauth-token.json
 
 # macOS-specific files
 .DS_Store

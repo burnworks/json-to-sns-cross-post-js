@@ -1,5 +1,4 @@
-import atprotoApi from '@atproto/api';
-const { BskyAgent, RichText } = atprotoApi;
+import { Agent, CredentialSession, RichText } from '@atproto/api';
 import ogs from 'open-graph-scraper';
 import sharp from 'sharp';
 import { promises as fsPromises } from 'fs';
@@ -22,9 +21,9 @@ const initializeAndLogin = async () => {
     if (!service || !identifier || !password) {
         throw new Error('環境変数が正しく読み込めませんでした');
     }
-    const agent = new BskyAgent({ service });
-    await agent.login({ identifier, password });
-    return agent;
+    const session = new CredentialSession(new URL(service));
+    await session.login({ identifier, password });
+    return new Agent(session);
 };
 
 // データURIを Uint8Array に変換するヘルパー関数
@@ -199,6 +198,7 @@ const main = async () => {
         console.log(chalk.green('Bluesky への投稿が成功しました'));
     } catch (error) {
         console.error(chalk.red('投稿処理でエラーが発生しました:'), error);
+        process.exitCode = 1;
     }
 };
 

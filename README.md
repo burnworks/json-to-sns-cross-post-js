@@ -1,14 +1,15 @@
-# json-to-sns-cross-post-js 
+# json-to-sns-cross-post-js
 
-A script for cross-posting to social networks like X (Twitter), Bluesky, and Mastodon from JSON data.
+A Node.js script for cross-posting JSON data to X, Bluesky, and Mastodon.
 
-JSON データから X（Twitter）, Bluesky, Mastodon などの SNS にクロスポストする JavaScript（Node.js）です。
+JSONデータからX、Bluesky、Mastodonへ同じ内容を投稿するNode.jsスクリプトです。テキストだけでなく、最大4枚の画像と代替テキストを投稿できます。
+
+## Requirements
+
+- Node.js 22以上
+- 投稿先SNSのアカウントとAPI認証情報
 
 ## Getting Started
-
-Install Node.js if you haven't already.
-
-Node.js v16 や v18 でも動作すると思いますが、v20.x 環境でしか動作テストしていないため、なるべく最新の Node.js を使用してください。
 
 ```sh
 git clone https://github.com/burnworks/json-to-sns-cross-post-js.git
@@ -16,125 +17,107 @@ cd json-to-sns-cross-post-js
 npm install
 ```
 
-## .env
+`.env.sample`を`.env`へコピーし、利用するSNSの設定を入力してください。
 
-`.env.sample` を `.env` にリネームしてから各環境変数を記述して保存してください。
-
-```
+```dotenv
 ## Bluesky
-BSKY_SERVICE_URL=【BlueskyでログインするURL 例）https://bsky.social】
-BSKY_IDENTIFIER=【ログインユーザーのメールアドレス】
-BSKY_PASSWORD=【アプリパスワード（管理画面から取得可能）】
+BSKY_SERVICE_URL=https://bsky.social
+BSKY_IDENTIFIER=
+BSKY_PASSWORD=
 
 ## Mastodon
-MASTODON_ACCESS_TOKEN=【アクセストークン（管理画面から取得可能）】
-MASTODON_API_URL=【APIのURL 例）https://mastodon.example.com/api/v1/】
+MASTODON_ACCESS_TOKEN=
+MASTODON_API_URL=https://mastodon.example.com/api/v1/
 
-## X (Teitter)
-X_API_KEY=【API キー】
-X_API_KEY_SECRET=【API secret key】
-X_ACCESS_TOKEN=【Access Token】
-X_ACCESS_TOKEN_SECRET=【Access Token Secret】
+## X
+X_OAUTH2_CLIENT_ID=
+X_OAUTH2_CLIENT_SECRET=
+X_CALLBACK_URL=https://example.com
 
-## JSON path (e.g. 'json/sample.json' or 'https://example.com/json/sample.json')
+## JSON path
 POST_JSON_URL=json/sample.json
 ```
 
-`POST_JSON_URL` は
+`POST_JSON_URL`には、プロジェクトルートからの相対パス、絶対パス、または`https://`から始まるURLを指定できます。
 
-- ローカル環境に置いた JSON ファイルならプロジェクトルートディレクトリからの相対パスを
-- Web上にあるJSONなら `https://` から始まる URL を
+利用しないSNSの環境変数は空のままでも構いませんが、そのSNSの投稿コマンドは実行しないでください。
 
-設定します。
+## Xの初回認証
 
-## JSON データ
+Xへの投稿にはOAuth 2.0を使用します。X Developer ConsoleでOAuth 2.0を有効にし、Client ID、Client Secret、Callback URLを`.env`へ設定してください。
 
-投稿に使用する JSON データの形式は下記の通りです。
+既定で次のスコープを要求します。
+
+```text
+tweet.read tweet.write users.read media.write offline.access
+```
+
+初回の`npm run post:x`では認可URLが表示されます。ブラウザで認可したあと、リダイレクト先のURL全体をターミナルへ貼り付けてください。取得したトークンは`.x-oauth-token.json`へ保存され、以後は再利用または自動更新されます。このファイルには認証情報が含まれるため、Gitへコミットしないでください。
+
+必要な場合は次の環境変数で既定値を変更できます。
+
+```dotenv
+X_OAUTH_SCOPES=tweet.read tweet.write users.read media.write offline.access
+X_TOKEN_CACHE_PATH=.x-oauth-token.json
+```
+
+`X_CALLBACK_URL`の代わりに`X_REDIRECT_URI`も使用できます。
+
+## JSONデータ
+
+投稿データは次の形式です。
 
 ```json
 {
-    "text": "投稿するテキスト\n改行は改行コードに\n\nURLもテキストとして入れられます。\nhttps://example.com/",
-    "images": [
-        {
-            "src": "./images/example-01.png",
-            "alt": "代替テキスト01"
-        },
-        {
-            "src": "./images/example-02.png",
-            "alt": "代替テキスト01"
-        },
-        {
-            "src": "./images/example-03.png",
-            "alt": "代替テキスト03"
-        },
-        {
-            "src": "./images/example-04.png",
-            "alt": "代替テキスト04"
-        }
-    ]
+  "text": "投稿するテキストです。\nhttps://example.com/",
+  "images": [
+    {
+      "src": "./images/example-01.png",
+      "alt": "画像の代替テキスト"
+    }
+  ]
 }
 ```
 
-`images` は、最大で 4 つまでの画像を投稿に添付できるようにしています。
+- `text`には投稿本文を指定します。文字数制限は各SNSに合わせてJSON作成時に調整してください。
+- `images`は省略するか空配列にすると、テキストだけを投稿します。
+- 添付画像は最大4枚です。
+- `images.src`にはローカルパスまたは`http://`・`https://`の画像URLを指定できます。
+- リモートJSONを使う場合、ローカル画像パスは実行環境から解決されます。別環境から参照できないパスを指定しないでください。
+- `images.alt`は省略できます。指定した場合は画像の代替テキストとして送信されます。
 
-テキストのみの投稿の場合は `images` を空にしてください。（`"images": []`）、あるいは `images` 自体を削除しても良いです。
-
-`images.src` は、
-
-- JSON をローカル環境に置く場合は、プロジェクトルートディレクトリからの相対パスでもよいですし、`https://` から始まる URL を入れても問題ありません。画像ごとに相対パスと URL が混在していても大丈夫です。
-- JSON をリモートの Web 上に置く場合は、`https://` から始まる画像の URL のみ入力可能です。
-
-`images.alt` は、空でもよいです。テキストが入った場合は、画像の代替テキストとして送信されます。
-
-> [!WARNING]
-> `"text"` の文字数は JSON を作る側で制御してください。スクリプト側では文字数を数えたりはしていませんので、長文が入って来た場合でもそのまま投稿しようとします。
-> SNS側で投稿の文字数制限がある場合は問題が起こるかもしれません。 
+サンプルは`json/sample.json`にあります。
 
 ## 投稿
 
-各環境変数が正しく設定され、JSON の内容に問題がないことを確認後、下記のコマンドで各スクリプトが実行されます。
+3つのSNSへ順番に投稿します。
 
 ```sh
 npm run post
 ```
 
-「投稿が成功しました」とログが表示されれば成功しています。エラーの場合はエラーログの内容を確認してください。
+実行順はX、Mastodon、Blueskyです。途中で失敗した場合、それより前のSNSには投稿済みになっている可能性があります。
 
-`package.json` の内容は下記の通りです。もし使用していないSNSがある場合は、`post:**` を必要に応じて削除するなどしてください。
-
-```json
-"scripts": {
-  "post": "run-s post:*",
-  "post:x": "node x.mjs",
-  "post:mastodon": "node mastodon.mjs",
-  "post:bluesky": "node bluesky.mjs"
-},
-```
-
-特定のスクリプトだけ実行したい場合は、
+SNSごとに個別実行することもできます。
 
 ```sh
-node bluesky.mjs
+npm run post:x
+npm run post:mastodon
+npm run post:bluesky
 ```
 
-などで実行できます。
+成功時は各SNSの「投稿が成功しました」というメッセージが表示されます。失敗時は終了コードが非ゼロになり、エラー内容が表示されます。
 
-## リンク
+## Notes
 
-### Bluesky
+- XではOAuth 2.0 PKCE、トークン更新、one-shot／chunked画像アップロードに対応しています。
+- Mastodonではメディア処理の完了を待ってから投稿し、通信切断時の二重投稿を避けるためIdempotency-Keyを使用します。
+- Blueskyでは本文中のリンクを解析し、取得できる場合はリンクカードを生成します。
+- JSON生成画面はこの公開リポジトリには含まれていません。
+
+## Links
+
 - [Bluesky API Documentation](https://docs.bsky.app/)
-- [atproto/packages/api](https://github.com/bluesky-social/atproto/tree/main/packages/api)
-
-### Mastodon
-- [statuses API methods - Mastodon documentation](https://docs.joinmastodon.org/methods/statuses/)
-- [vanita5/mastodon-api: Mastodon API Client Library](https://github.com/vanita5/mastodon-api)
-
-### X (Twitter)
-- [Twitter API Documentation](https://developer.twitter.com/en/docs/twitter-api)
-- [PLhery/node-twitter-api-v2](https://github.com/plhery/node-twitter-api-v2)
-
-## メモ
-
-- mastodon-api がメンテされてないっぽいのが気になる
-- JSON を取得しにいく部分とかは各スクリプトに個別に実装するんじゃなく共通コード化した方がいいと思うけど面倒くさいので今はよし
-- Bluesky に関して、リンク投稿時にリンクカードにするには og:image を取得してアップロードって処理が必要ですが、~~たまに失敗するみたいです（投稿自体はできる。リンクカードにならないだけ）~~ ←画像処理部分を変更したので多分直ったと思う
+- [Mastodon API documentation](https://docs.joinmastodon.org/api/)
+- [X Developer Platform](https://developer.x.com/)
+- [@xdevplatform/xdk](https://www.npmjs.com/package/@xdevplatform/xdk)
